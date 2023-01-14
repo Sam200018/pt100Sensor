@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 part 'sensors_event.dart';
@@ -29,18 +28,23 @@ class SensorsBloc extends Bloc<SensorsEvent, SensorsState> {
     var deviceIsConnect = await serial.isEnabled;
     print(deviceIsConnect);
     if (deviceIsConnect!) {
-      // print("emitir un nuevo estado");
+      String bin = "000000000";
       try {
         var connection = await BluetoothConnection.toAddress(event.address);
         connection.input!.listen((temperature) {
-          List<String> lecture =
-              ascii.decode(temperature).toString().split(" ");
-          add(ShowInput(lecture[1], lecture[0]));
+          List<String> lecture = utf8.decode(temperature).toString().split(" ");
+          if (lecture[0]=="") {
+
+            add(ShowInput(lecture[1],bin));
+          } else {
+            bin=lecture[0];
+            add(ShowInput(lecture[1], lecture[0]));
+          }
         });
       } catch (e) {
-        print(e);
+        // print(e);
       }
-    } else {}
+    }
   }
 
   @override
@@ -73,6 +77,6 @@ class SensorsBloc extends Bloc<SensorsEvent, SensorsState> {
   }
 
   void _onShowInputToState(ShowInput event, Emitter<SensorsState> emit) {
-    emit(Lecture(event.temperature,event.bin));
+    emit(Lecture(event.temperature, event.bin));
   }
 }
